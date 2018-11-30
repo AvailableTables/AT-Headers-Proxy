@@ -1,4 +1,6 @@
 reviews/client/dist/bundle.js
+proxy/public/services/Headers.js
+proxy/templates/services/Headers-server.js
 reviews/node_modules
 proxy/node_modules
 node_modules

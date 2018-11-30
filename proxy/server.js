@@ -4,12 +4,52 @@ const path = require('path');
 const axios = require('axios');
 const app = express();
 const parser = require('body-parser');
+const fetch = require('node-fetch');
+// const services = require('./public/services.js');
+const fs = require('fs');
 const port = process.env.PORT || 3000;
 
 app.use(morgan('dev'));
 app.use(parser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+const clientBundles = './public/services';
+const serverBundles = './templates/services';
+const serviceConfig = require('./service-config.js');
+const services = require('./loader.js')(clientBundles, serverBundles, serviceConfig);
+const application = require('./templates/services/Headers-server.js');
+console.log('services in server is: ', services)
+// console.log('application is: ', application)
+
+const React = require('react');
+const ReactDOM = require('react-dom/server');
+const Layout = require('./templates/layout.js');
+const App = require('./templates/app.js');
+const Scripts = require('./templates/scripts.js');
+
+const renderComponents = (components, props = {}) => {
+  return Object.keys(components).map(component => {
+    console.log('components are: ', components)
+    console.log('component is: ', components[component]);
+    let temp = React.createElement("http://localhost:3040/headers", props);
+    console.log('temp is: ', temp)
+    return ReactDOM.renderToString(temp);
+  })
+  // let temp = React.createElement(components, props)
+  // return ReactDOM.renderToString(temp);
+}
+
+app.get('/headers/:id', (req, res) => {
+  console.log('app.get application is: ', services);
+  let components = renderComponents(services, {id: req.params.id});
+  res.end(Layout(
+    'SDC Proxy',
+    App(...components),
+    Scripts(Object.keys(services))
+  ))
+})
+
+//////////////////
 app.all('/*', function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   next();
@@ -97,3 +137,6 @@ app.get('/api/header/:id', (req, res) => {
 app.listen(port, () => {
   console.log(`server running at: http://localhost:${port}`);
 });
+
+
+
