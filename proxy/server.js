@@ -70,8 +70,6 @@ app.get('/restaurants/:id', async (req, res) => {
   ])
 
   let headersData = {html: results[0].data.html, images: results[0].data.images}
-  console.log('data is: ', headersData);
-
   res.send(`
   <!DOCTYPE html>
   <html lang="en">
