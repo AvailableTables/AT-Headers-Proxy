@@ -2,7 +2,7 @@ module.exports = (items) => `
   <script src="../public/lib/react.development.js"</script>
   <script src="../public/lib/react-dom.development.js"></script>
   ${items.map(item => {
-    return `<script src="./services/${item}.js"></script>`;
+    return `<script src="/services/${item}.js"></script>`;
   }).join('\n')}
   <script>
     ${items.map(item => `

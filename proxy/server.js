@@ -4,52 +4,12 @@ const path = require('path');
 const axios = require('axios');
 const app = express();
 const parser = require('body-parser');
-const fetch = require('node-fetch');
-// const services = require('./public/services.js');
-const fs = require('fs');
 const port = process.env.PORT || 3000;
 
 app.use(morgan('dev'));
 app.use(parser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const clientBundles = './public/services';
-const serverBundles = './templates/services';
-const serviceConfig = require('./service-config.js');
-const services = require('./loader.js')(clientBundles, serverBundles, serviceConfig);
-const application = require('./templates/services/Headers-server.js');
-console.log('services in server is: ', services)
-// console.log('application is: ', application)
-
-const React = require('react');
-const ReactDOM = require('react-dom/server');
-const Layout = require('./templates/layout.js');
-const App = require('./templates/app.js');
-const Scripts = require('./templates/scripts.js');
-
-const renderComponents = (components, props = {}) => {
-  return Object.keys(components).map(component => {
-    console.log('components are: ', components)
-    console.log('component is: ', components[component]);
-    let temp = React.createElement("http://localhost:3040/headers", props);
-    console.log('temp is: ', temp)
-    return ReactDOM.renderToString(temp);
-  })
-  // let temp = React.createElement(components, props)
-  // return ReactDOM.renderToString(temp);
-}
-
-app.get('/headers/:id', (req, res) => {
-  console.log('app.get application is: ', services);
-  let components = renderComponents(services, {id: req.params.id});
-  res.end(Layout(
-    'SDC Proxy',
-    App(...components),
-    Scripts(Object.keys(services))
-  ))
-})
-
-//////////////////
 app.all('/*', function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   next();
@@ -59,9 +19,9 @@ app.get('/favicon.ico', (req, res) => {
   res.send();
 });
 
-app.get('/restaurants/*', (req, res) => {
-  res.sendFile(path.join(__dirname, './public/index.html'));
-});
+// app.get('/restaurants/*', (req, res) => {
+//   res.sendFile(path.join(__dirname, './public/index.html'));
+// });
 
 // Reviews Service
 // app.get('/API/Reviews/*', (req, res) => {
@@ -101,13 +61,51 @@ app.get('/restaurants/*', (req, res) => {
 
 // Header
 
-app.get('/api/header/:id', (req, res) => {
-  const url = `http://localhost:3040${req.url}`
-  axios.get(url)
-  .then( ({data}) => {
-    res.send(data)
-  })
-  .catch( (err) => {console.log('error on get to api/header')})
+const components = require('./service-config.js');
+app.get('/restaurants/:id', async (req, res) => {
+  let id = req.params.id;
+
+  let results = await Promise.all([
+    axios.get(`${components.headers.url}?id=${id}`)
+  ])
+
+  let headersData = {html: results[0].data.html, images: results[0].data.images}
+  console.log('data is: ', headersData);
+
+  res.send(`
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <!-- <link rel="stylesheet" href="http://3.16.45.212/styles.css"> -->
+      <link rel="stylesheet" href="/style.css">
+      <title>FEC - TableOpen</title>
+    </head>
+    <body>
+      <div class="body">
+        <div id="Headers">${headersData.html}</div>
+        <div class="mainbody">
+          <div id="Reservations"></div>
+          <div class="data">
+            <div id="Overview"></div>
+            <div id="Reviews"></div>
+          </div>
+        </div>
+      </div>
+      <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+      <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+      <script type="text/javascript" src="${components.headers.bundle}"></script>
+      <script>
+        ReactDOM.hydrate(
+          React.createElement(Headers, ${JSON.stringify(headersData)}),
+          document.getElementById('Headers')
+        );
+      </script>
+    </body>
+  </html>
+  
+  `)
+  
 })
 
 // app.get('/header', (req, res) => {
