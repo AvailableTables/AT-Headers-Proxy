@@ -5,3 +5,4 @@ reviews/node_modules
 proxy/node_modules
 node_modules
 Dockerfile
+proxy/sdc-proxy.pem
