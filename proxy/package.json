@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "start": "nodemon ./server.js",
-    "aws-connect": "chmod 400 sdc-proxy.pem  && ssh -i \"sdc-proxy.pem\" ubuntu@ec2-18-191-209-172.us-east-2.compute.amazonaws.com"
+    "aws-connect": "chmod 400 sdc-proxy.pem  && ssh -i \"sdc-proxy.pem\" ubuntu@ec2-13-58-236-167.us-east-2.compute.amazonaws.com"
   },
   "keywords": [],
   "author": "",
